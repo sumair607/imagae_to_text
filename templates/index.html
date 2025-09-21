@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picture to Text - OCR App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Picture to Text</h1>
+        <p>Upload an image to extract text using OCR</p>
+        
+        <div class="upload-section">
+            <input type="file" id="imageInput" accept="image/*" />
+            <button id="extractBtn" disabled>Extract Text</button>
+        </div>
+        
+        <div id="loading" class="loading hidden">Processing image...</div>
+        
+        <div id="result" class="result hidden">
+            <h3>Extracted Text:</h3>
+            <textarea id="extractedText" readonly></textarea>
+            <button id="copyBtn">Copy Text</button>
+        </div>
+        
+        <div id="error" class="error hidden"></div>
+    </div>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const extractBtn = document.getElementById('extractBtn');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const extractedText = document.getElementById('extractedText');
+        const copyBtn = document.getElementById('copyBtn');
+        const error = document.getElementById('error');
+
+        // Enable extract button when file is selected
+        imageInput.addEventListener('change', function() {
+            extractBtn.disabled = !this.files.length;
+        });
+
+        // Extract text from image
+        extractBtn.addEventListener('click', async function() {
+            const file = imageInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            // Show loading, hide previous results
+            loading.classList.remove('hidden');
+            result.classList.add('hidden');
+            error.classList.add('hidden');
+
+            try {
+                const response = await fetch('/extract-text', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    extractedText.value = data.text || 'No text found in image';
+                    result.classList.remove('hidden');
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                error.textContent = err.message;
+                error.classList.remove('hidden');
+            } finally {
+                loading.classList.add('hidden');
+            }
+        });
+
+        // Copy text to clipboard
+        copyBtn.addEventListener('click', function() {
+            extractedText.select();
+            document.execCommand('copy');
+            this.textContent = 'Copied!';
+            setTimeout(() => this.textContent = 'Copy Text', 2000);
+        });
+    </script>
+</body>
+</html>

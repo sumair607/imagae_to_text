@@ -1,0 +1,12 @@
+{
+  "name": "your-app",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
