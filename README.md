@@ -86,4 +86,4 @@ picture-to-text/
 
 **Large file upload errors:**
 - Check Flask's MAX_CONTENT_LENGTH setting
-- Compress images before upload
+- Compress images before upload# imagae_to_text
