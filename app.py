@@ -1,3 +1,4 @@
+# Image to Text Flask App
 from flask import Flask, request, render_template, jsonify
 from flask_cors import CORS
 import pytesseract
@@ -47,6 +48,10 @@ def extract_text():
     except Exception as e:
         return jsonify({'error': f'OCR processing failed: {str(e)}'}), 500
 
+# For Vercel deployment
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=False, host='0.0.0.0', port=port)
+
+# Export app for Vercel
+app = app
