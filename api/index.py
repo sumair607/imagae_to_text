@@ -41,8 +41,8 @@ def extract_text():
                 img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
             
             # Use Google Vision API (free tier: 1000 requests/month)
-            api_key = os.environ.get('GOOGLE_VISION_API_KEY', 'demo')
-            if api_key == 'demo':
+            api_key = os.environ.get('GOOGLE_VISION_API_KEY')
+            if not api_key:
                 extracted_text = "Demo mode: Please add GOOGLE_VISION_API_KEY environment variable"
             else:
                 url = f'https://vision.googleapis.com/v1/images:annotate?key={api_key}'
