@@ -7,7 +7,7 @@ from PIL import Image
 import os
 import tempfile
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../templates', static_folder='../static')
 CORS(app)  # Enable CORS for WordPress integration
 
 # Configure upload settings
