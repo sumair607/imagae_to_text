@@ -1,7 +1,8 @@
 # Image to Text Flask App
 from flask import Flask, request, render_template, jsonify
 from flask_cors import CORS
-from paddleocr import PaddleOCR
+import requests
+import base64
 from PIL import Image
 import os
 import tempfile
@@ -35,9 +36,25 @@ def extract_text():
             
             # Open image and extract text
             image = Image.open(temp_file.name)
-            ocr = PaddleOCR(use_angle_cls=True, lang='en', show_log=False)
-            result = ocr.ocr(temp_file.name, cls=True)
-            extracted_text = ' '.join([line[1][0] for line in result[0] if line])
+            # Convert image to base64
+            with open(temp_file.name, 'rb') as img_file:
+                img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
+            
+            # Use Google Vision API (free tier: 1000 requests/month)
+            api_key = os.environ.get('GOOGLE_VISION_API_KEY', 'demo')
+            if api_key == 'demo':
+                extracted_text = "Demo mode: Please add GOOGLE_VISION_API_KEY environment variable"
+            else:
+                url = f'https://vision.googleapis.com/v1/images:annotate?key={api_key}'
+                payload = {
+                    'requests': [{
+                        'image': {'content': img_base64},
+                        'features': [{'type': 'TEXT_DETECTION'}]
+                    }]
+                }
+                response = requests.post(url, json=payload)
+                result = response.json()
+                extracted_text = result['responses'][0].get('fullTextAnnotation', {}).get('text', 'No text found')
             
             # Clean up temp file
             os.unlink(temp_file.name)
