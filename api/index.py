@@ -43,7 +43,7 @@ def extract_text():
             # Use Google Vision API (free tier: 1000 requests/month)
             api_key = os.environ.get('GOOGLE_VISION_API_KEY')
             if not api_key:
-                extracted_text = "Demo mode: Please add GOOGLE_VISION_API_KEY environment variable"
+                extracted_text = f"Demo mode: API key not found. Available env vars: {list(os.environ.keys())}"
             else:
                 url = f'https://vision.googleapis.com/v1/images:annotate?key={api_key}'
                 payload = {
@@ -54,7 +54,10 @@ def extract_text():
                 }
                 response = requests.post(url, json=payload)
                 result = response.json()
-                extracted_text = result['responses'][0].get('fullTextAnnotation', {}).get('text', 'No text found')
+                if 'error' in result:
+                    extracted_text = f"API Error: {result['error']}"
+                else:
+                    extracted_text = result['responses'][0].get('fullTextAnnotation', {}).get('text', 'No text found')
             
             # Clean up temp file
             os.unlink(temp_file.name)
