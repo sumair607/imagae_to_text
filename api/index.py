@@ -1,7 +1,7 @@
 # Image to Text Flask App
 from flask import Flask, request, render_template, jsonify
 from flask_cors import CORS
-import pytesseract
+from paddleocr import PaddleOCR
 from PIL import Image
 import os
 import tempfile
@@ -35,7 +35,9 @@ def extract_text():
             
             # Open image and extract text
             image = Image.open(temp_file.name)
-            extracted_text = pytesseract.image_to_string(image)
+            ocr = PaddleOCR(use_angle_cls=True, lang='en', show_log=False)
+            result = ocr.ocr(temp_file.name, cls=True)
+            extracted_text = ' '.join([line[1][0] for line in result[0] if line])
             
             # Clean up temp file
             os.unlink(temp_file.name)
