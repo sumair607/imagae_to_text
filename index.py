@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template, jsonify
 from flask_cors import CORS
-import pytesseract
+import easyocr
 from PIL import Image
 import os
 import tempfile
@@ -27,7 +27,9 @@ def extract_text():
         with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
             file.save(temp_file.name)
             image = Image.open(temp_file.name)
-            extracted_text = pytesseract.image_to_string(image)
+            reader = easyocr.Reader(['en'])
+            result = reader.readtext(image)
+            extracted_text = ' '.join([item[1] for item in result])
             os.unlink(temp_file.name)
             
             return jsonify({
