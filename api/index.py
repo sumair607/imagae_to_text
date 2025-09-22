@@ -1,4 +1,4 @@
-# Image to Text Flask App
+# Image to Text Flask App v2
 from flask import Flask, request, render_template, jsonify
 from flask_cors import CORS
 import requests
@@ -40,24 +40,24 @@ def extract_text():
             with open(temp_file.name, 'rb') as img_file:
                 img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
             
-            # Use Google Vision API (free tier: 1000 requests/month)
-            api_key = os.environ.get('GOOGLE_VISION_API_KEY')
-            if not api_key:
-                extracted_text = f"Demo mode: API key not found. Available env vars: {list(os.environ.keys())}"
+            # Simple OCR using free OCR.space API (no signup needed)
+            url = 'https://api.ocr.space/parse/image'
+            payload = {
+                'base64Image': f'data:image/png;base64,{img_base64}',
+                'apikey': 'helloworld',  # Free tier key
+                'language': 'eng'
+            }
+            response = requests.post(url, data=payload)
+            result = response.json()
+            
+            if result.get('IsErroredOnProcessing'):
+                extracted_text = f"OCR Error: {result.get('ErrorMessage', 'Unknown error')}"
             else:
-                url = f'https://vision.googleapis.com/v1/images:annotate?key={api_key}'
-                payload = {
-                    'requests': [{
-                        'image': {'content': img_base64},
-                        'features': [{'type': 'TEXT_DETECTION'}]
-                    }]
-                }
-                response = requests.post(url, json=payload)
-                result = response.json()
-                if 'error' in result:
-                    extracted_text = f"API Error: {result['error']}"
+                parsed_results = result.get('ParsedResults', [])
+                if parsed_results:
+                    extracted_text = parsed_results[0].get('ParsedText', 'No text found')
                 else:
-                    extracted_text = result['responses'][0].get('fullTextAnnotation', {}).get('text', 'No text found')
+                    extracted_text = 'No text found'
             
             # Clean up temp file
             os.unlink(temp_file.name)
