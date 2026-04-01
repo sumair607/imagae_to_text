@@ -46,6 +46,15 @@ input[type="file"] {
     width: 100%;
 }
 
+select {
+    margin-bottom: 1rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
 button {
     background: #667eea;
     color: white;
